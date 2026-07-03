@@ -5,6 +5,7 @@ import { tags } from '@/lib/cache/tags'
 import { cu } from '@/lib/clickup/client'
 import { db } from '@/lib/db'
 import { env } from '@/lib/env'
+import { resolveNotifiableUser, sendPushToUser } from '@/lib/push/send'
 
 // Events that carry a task_id and should invalidate that task's cache tags.
 const TASK_EVENTS = new Set([
@@ -64,7 +65,7 @@ export async function POST(request: Request) {
 		// getUserTasks bounds staleness either way if this fetch fails.
 		if (event !== 'taskDeleted') {
 			try {
-				const task = await cu<{ name: string; assignees: { id: number; username: string }[] }>(
+				const task = await cu<{ name: string; url: string; assignees: { id: number; username: string }[] }>(
 					`/task/${taskId}`,
 					{ token: env.clickupServiceToken },
 				)
@@ -75,6 +76,8 @@ export async function POST(request: Request) {
 
 				const actor = payload.history_items?.[0]?.user
 				const recipients = task.assignees.filter((assignee) => assignee.id !== actor?.id)
+				const isComment = COMMENT_EVENTS.has(event)
+
 				if (recipients.length > 0) {
 					await db
 						.insertInto('notifications')
@@ -89,6 +92,26 @@ export async function POST(request: Request) {
 							})),
 						)
 						.execute()
+
+					await Promise.all(
+						recipients.map(async (recipient) => {
+							const notifiable = await resolveNotifiableUser(String(recipient.id))
+							if (!notifiable) return // hasn't connected their ClickUp account to the app
+
+							const allowed = isComment ? notifiable.notifyComment : notifiable.notifyAssigned
+							if (!allowed) return
+
+							await sendPushToUser(notifiable.userId, {
+								title: isComment
+									? `${actor?.username ?? 'Someone'} commented`
+									: `${actor?.username ?? 'Someone'} updated a task`,
+								body: task.name,
+								// Task detail view doesn't exist yet (Phase 4) — link to the real
+								// ClickUp task in the meantime.
+								url: task.url,
+							})
+						}),
+					)
 				}
 			} catch (err) {
 				console.error('[clickup-webhook] failed to enrich event', event, taskId, err)
