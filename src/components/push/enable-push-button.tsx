@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { savePushSubscription } from '@/lib/actions/push'
 
 function urlBase64ToUint8Array(base64String: string) {
@@ -10,10 +10,30 @@ function urlBase64ToUint8Array(base64String: string) {
 	return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)))
 }
 
-type Status = 'idle' | 'working' | 'enabled' | 'error'
+type Status = 'checking' | 'idle' | 'working' | 'enabled' | 'error'
 
 export function EnablePushButton() {
-	const [status, setStatus] = useState<Status>('idle')
+	const [status, setStatus] = useState<Status>('checking')
+
+	useEffect(() => {
+		let cancelled = false
+		if (!('serviceWorker' in navigator)) {
+			setStatus('idle')
+			return
+		}
+		navigator.serviceWorker
+			.getRegistration('/sw.js')
+			.then((registration) => registration?.pushManager.getSubscription())
+			.then((subscription) => {
+				if (!cancelled) setStatus(subscription ? 'enabled' : 'idle')
+			})
+			.catch(() => {
+				if (!cancelled) setStatus('idle')
+			})
+		return () => {
+			cancelled = true
+		}
+	}, [])
 
 	async function enable() {
 		setStatus('working')
@@ -44,6 +64,7 @@ export function EnablePushButton() {
 		}
 	}
 
+	if (status === 'checking') return null
 	if (status === 'enabled') return <span>Push notifications enabled</span>
 
 	return (
