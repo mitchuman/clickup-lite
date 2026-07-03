@@ -19,5 +19,8 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-	matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico).*)'],
+	// Excludes all of /api/* — auth's own catch-all handles its own routing,
+	// and route handlers like /api/webhooks/* authenticate via signature
+	// verification, not the session cookie, so they must never hit this gate.
+	matcher: ['/((?!api/|_next/static|_next/image|favicon.ico).*)'],
 }
