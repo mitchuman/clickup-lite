@@ -1,0 +1,138 @@
+import { type Kysely, sql } from 'kysely'
+
+export async function up(db: Kysely<any>): Promise<void> {
+	await db.schema
+		.createTable('project_mappings')
+		.addColumn('id', 'serial', (col) => col.primaryKey())
+		.addColumn('clickup_list_id', 'text', (col) => col.notNull().unique())
+		.addColumn('clickup_space_id', 'text')
+		.addColumn('name', 'text', (col) => col.notNull())
+		.addColumn('github_repo', 'text')
+		.addColumn('github_default_branch', 'text')
+		.addColumn('shopify_store_domain', 'text')
+		.addColumn('vercel_project_id', 'text')
+		.addColumn('netlify_site_id', 'text')
+		.addColumn('sanity_project_id', 'text')
+		.addColumn('sanity_dataset', 'text')
+		.addColumn('staging_url', 'text')
+		.addColumn('production_url', 'text')
+		.addColumn('deploys_task_id', 'text')
+		.addColumn('created_at', 'timestamptz', (col) => col.notNull().defaultTo(sql`now()`))
+		.addColumn('updated_at', 'timestamptz', (col) => col.notNull().defaultTo(sql`now()`))
+		.execute()
+
+	await db.schema
+		.createTable('pinned_tasks')
+		.addColumn('id', 'serial', (col) => col.primaryKey())
+		.addColumn('user_id', 'text', (col) => col.notNull())
+		.addColumn('clickup_task_id', 'text', (col) => col.notNull())
+		.addColumn('task_name', 'text', (col) => col.notNull())
+		.addColumn('position', 'integer', (col) => col.notNull().defaultTo(0))
+		.addColumn('pinned_at', 'timestamptz', (col) => col.notNull().defaultTo(sql`now()`))
+		.addUniqueConstraint('pinned_tasks_user_task_unique', ['user_id', 'clickup_task_id'])
+		.execute()
+
+	await db.schema
+		.createTable('comment_presets')
+		.addColumn('id', 'serial', (col) => col.primaryKey())
+		.addColumn('user_id', 'text')
+		.addColumn('label', 'text', (col) => col.notNull())
+		.addColumn('body_template', 'text', (col) => col.notNull())
+		.addColumn('position', 'integer', (col) => col.notNull().defaultTo(0))
+		.addColumn('created_at', 'timestamptz', (col) => col.notNull().defaultTo(sql`now()`))
+		.execute()
+
+	await db.schema
+		.createTable('push_subscriptions')
+		.addColumn('id', 'serial', (col) => col.primaryKey())
+		.addColumn('user_id', 'text', (col) => col.notNull())
+		.addColumn('endpoint', 'text', (col) => col.notNull().unique())
+		.addColumn('p256dh', 'text', (col) => col.notNull())
+		.addColumn('auth', 'text', (col) => col.notNull())
+		.addColumn('user_agent', 'text')
+		.addColumn('created_at', 'timestamptz', (col) => col.notNull().defaultTo(sql`now()`))
+		.execute()
+
+	await db.schema
+		.createTable('notifications')
+		.addColumn('id', 'serial', (col) => col.primaryKey())
+		.addColumn('clickup_user_id', 'text', (col) => col.notNull())
+		.addColumn('type', 'text', (col) => col.notNull())
+		.addColumn('clickup_task_id', 'text')
+		.addColumn('task_name', 'text')
+		.addColumn('actor', 'text')
+		.addColumn('body', 'text')
+		.addColumn('read_at', 'timestamptz')
+		.addColumn('created_at', 'timestamptz', (col) => col.notNull().defaultTo(sql`now()`))
+		.execute()
+
+	await db.schema
+		.createIndex('notifications_user_unread_idx')
+		.on('notifications')
+		.columns(['clickup_user_id', 'read_at'])
+		.execute()
+
+	await db.schema
+		.createTable('deploy_events')
+		.addColumn('id', 'serial', (col) => col.primaryKey())
+		.addColumn('provider', 'text', (col) => col.notNull())
+		.addColumn('deploy_id', 'text', (col) => col.notNull())
+		.addColumn('mapping_id', 'integer', (col) => col.references('project_mappings.id'))
+		.addColumn('clickup_task_id', 'text')
+		.addColumn('clickup_comment_id', 'text')
+		.addColumn('state', 'text', (col) => col.notNull())
+		.addColumn('branch', 'text')
+		.addColumn('commit_sha', 'text')
+		.addColumn('commit_message', 'text')
+		.addColumn('url', 'text')
+		.addColumn('created_at', 'timestamptz', (col) => col.notNull().defaultTo(sql`now()`))
+		.addColumn('updated_at', 'timestamptz', (col) => col.notNull().defaultTo(sql`now()`))
+		.addUniqueConstraint('deploy_events_provider_deploy_unique', ['provider', 'deploy_id'])
+		.execute()
+
+	await db.schema
+		.createTable('user_prefs')
+		.addColumn('user_id', 'text', (col) => col.primaryKey())
+		.addColumn('timezone', 'text')
+		.addColumn('notify_assigned', 'boolean', (col) => col.notNull().defaultTo(true))
+		.addColumn('notify_comment', 'boolean', (col) => col.notNull().defaultTo(true))
+		.addColumn('notify_mention', 'boolean', (col) => col.notNull().defaultTo(true))
+		.addColumn('notify_due', 'boolean', (col) => col.notNull().defaultTo(true))
+		.addColumn('notify_deploy', 'boolean', (col) => col.notNull().defaultTo(true))
+		.addColumn('home_layout', 'jsonb')
+		.execute()
+
+	await db.schema
+		.createTable('webhook_state')
+		.addColumn('id', 'serial', (col) => col.primaryKey())
+		.addColumn('clickup_webhook_id', 'text', (col) => col.notNull())
+		.addColumn('team_id', 'text', (col) => col.notNull())
+		.addColumn('endpoint_url', 'text', (col) => col.notNull())
+		.addColumn('secret', 'text', (col) => col.notNull())
+		.addColumn('events', 'jsonb', (col) => col.notNull())
+		.addColumn('created_at', 'timestamptz', (col) => col.notNull().defaultTo(sql`now()`))
+		.execute()
+
+	await db.schema
+		.createTable('pr_dispatches')
+		.addColumn('id', 'serial', (col) => col.primaryKey())
+		.addColumn('clickup_task_id', 'text', (col) => col.notNull())
+		.addColumn('repo', 'text', (col) => col.notNull())
+		.addColumn('workflow_run_url', 'text')
+		.addColumn('dispatched_by', 'text', (col) => col.notNull())
+		.addColumn('status', 'text', (col) => col.notNull().defaultTo('pending'))
+		.addColumn('created_at', 'timestamptz', (col) => col.notNull().defaultTo(sql`now()`))
+		.execute()
+}
+
+export async function down(db: Kysely<any>): Promise<void> {
+	await db.schema.dropTable('pr_dispatches').execute()
+	await db.schema.dropTable('webhook_state').execute()
+	await db.schema.dropTable('user_prefs').execute()
+	await db.schema.dropTable('deploy_events').execute()
+	await db.schema.dropTable('notifications').execute()
+	await db.schema.dropTable('push_subscriptions').execute()
+	await db.schema.dropTable('comment_presets').execute()
+	await db.schema.dropTable('pinned_tasks').execute()
+	await db.schema.dropTable('project_mappings').execute()
+}
