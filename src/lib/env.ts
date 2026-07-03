@@ -19,14 +19,12 @@ export const env = {
 	get betterAuthUrl() {
 		return requireEnv('BETTER_AUTH_URL')
 	},
+	// AES-256-GCM key (base64) for encrypting per-user ClickUp personal tokens at rest
+	get tokenEncryptionKey() {
+		return requireEnv('TOKEN_ENCRYPTION_KEY')
+	},
 
 	// clickup
-	get clickupClientId() {
-		return requireEnv('CLICKUP_CLIENT_ID')
-	},
-	get clickupClientSecret() {
-		return requireEnv('CLICKUP_CLIENT_SECRET')
-	},
 	get clickupTeamId() {
 		return requireEnv('CLICKUP_TEAM_ID')
 	},
