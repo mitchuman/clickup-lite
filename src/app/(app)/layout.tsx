@@ -1,4 +1,5 @@
 import { Suspense, type ReactNode } from 'react'
+import { CommandPalette } from '@/components/cmdk/command-palette'
 import { PinnedBar } from '@/components/pins/pinned-bar'
 import { EnablePushButton } from '@/components/push/enable-push-button'
 import { requireUser } from '@/lib/session'
@@ -25,6 +26,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 			<Suspense fallback={null}>
 				<PinnedBar />
 			</Suspense>
+			<CommandPalette />
 			{children}
 		</div>
 	)
