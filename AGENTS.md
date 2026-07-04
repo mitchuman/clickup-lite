@@ -13,6 +13,10 @@ Concretely, this means:
 
 If a proposed change trades speed for convenience, flag the tradeoff explicitly rather than silently accepting it.
 
+# Project plan & status
+
+See `PLAN.md` for the full architecture (token/cache strategy, tag taxonomy), phase status (Phases 0–3 shipped and verified; Phase 4 — task view, comments, pins, cmd+k — is next), live infrastructure details, and a list of verified Next.js 16 gotchas. Update `PLAN.md` when a phase lands or a decision changes.
+
 <!-- BEGIN:nextjs-agent-rules -->
 # This is NOT the Next.js you know
 
