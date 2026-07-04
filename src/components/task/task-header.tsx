@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { PinButton } from '@/components/pins/pin-button'
 import { getTask } from '@/lib/clickup/cached'
 import { ClickUpApiError } from '@/lib/clickup/client'
 import { formatDuration } from '@/lib/date'
@@ -18,7 +19,9 @@ export async function TaskHeader({ taskId }: { taskId: string }) {
 
 	return (
 		<section>
-			<h1>{task.name}</h1>
+			<h1>
+				{task.name} <PinButton taskId={task.id} taskName={task.name} />
+			</h1>
 			<p>
 				<span style={{ color: task.status.color }}>{task.status.status}</span>
 				{' · '}

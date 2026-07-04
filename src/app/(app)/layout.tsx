@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { Suspense, type ReactNode } from 'react'
+import { PinnedBar } from '@/components/pins/pinned-bar'
 import { EnablePushButton } from '@/components/push/enable-push-button'
 import { requireUser } from '@/lib/session'
 import { SignOutButton } from './sign-out-button'
@@ -21,6 +22,9 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 				<EnablePushButton />
 				<SignOutButton />
 			</header>
+			<Suspense fallback={null}>
+				<PinnedBar />
+			</Suspense>
 			{children}
 		</div>
 	)
