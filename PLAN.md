@@ -10,7 +10,7 @@ Performance-first custom frontend over the real ClickUp workspace (Human Marketi
 | 1 | Auth: better-auth email/password + per-user ClickUp personal token (encrypted) | ✅ Done, verified locally + production |
 | 2 | ClickUp data layer, homepage widgets, webhook-driven revalidation | ✅ Done, verified with real ClickUp traffic |
 | 3 | Web push notifications (PWA) | ✅ Done, verified end-to-end (Chrome; Firefox/macOS has an environmental display quirk) |
-| 4 | Task view, comments, pins, cmd+k | 🔜 Next — not started (only the ClickUp comment API shape was verified: `GET /task/{id}/comment` → `{comments:[{id, comment_text, date, user:{id,username,profilePicture}, reply_count, ...}]}`) |
+| 4 | Task view, comments, pins, cmd+k | ✅ Done — typecheck + `bun run build` verified locally (`/task/[taskId]` partial-prerenders ◐); live verification on Netlify pending next deploy |
 | 5 | Project mappings admin, Netlify/Vercel deploy webhooks → dynamic ClickUp comment, GitHub commits on tasks | Planned |
 | 6 | "Fire up PR" agent-dispatch buttons (GitHub workflow_dispatch) | Planned |
 
@@ -35,14 +35,15 @@ Performance-first custom frontend over the real ClickUp workspace (Human Marketi
 - **ClickUp workspace**: team id `90151122000`; Mitchell's ClickUp user id is `94741870`
 - Package manager is **bun**. TypeScript check: `bunx tsc --noEmit`.
 
-## Phase 4 (next) — Task view, interactions, cmd+k
+## Phase 4 (shipped) — Task view, interactions, cmd+k
 
-- `src/app/(app)/task/[taskId]/page.tsx`: static frame + parallel `<Suspense>` boundaries — TaskHeader/Description (`getTask`), DocPills (links parsed from description), CommentThread (`getTaskComments`). ExternalLinks/Commits wait for Phase 5 mappings.
-- New cached fetchers in `clickup/cached.ts`: `getTask(taskId)` (tag `task:{id}`, life `hours`), `getTaskComments(taskId)` (tags `task:{id}:comments` + `task:{id}`), `getTaskIndex()` (slim open-task index, tag `team:task-index`) for cmd+k.
-- Server Actions (`src/lib/actions/`): `postComment(taskId, text)` — user's own token → `POST /task/{id}/comment`, then `updateTag` for read-your-own-writes; `togglePin` (pinned_tasks table).
-- Optimistic UI via zustand stores (`src/stores/`) — comments/pins appear instantly, reconcile in background.
-- **PinnedBar** in `(app)/layout.tsx` (own Suspense boundary); internal task links so navigation stays in-app.
-- **cmd+k palette** (Base UI Dialog): Tier 1 = 0ms client fuzzy filter over pins + localStorage recents + session-fetched task index (`GET /api/search-index` wrapping `getTaskIndex`); Tier 2 = debounced `GET /api/search?q=` → ClickUp filtered team tasks. Keyboard shortcuts hook in the app layout.
+- `src/app/(app)/task/[taskId]/page.tsx`: static frame + three parallel `<Suspense>` boundaries — TaskHeader (incl. description + PinButton, `getTask`), DocPills (links parsed from description, reuses the same `getTask` cache entry), CommentThread (`getTaskComments` + session via `Promise.all`). ExternalLinks/Commits wait for Phase 5 mappings. Builds as partial prerender (◐).
+- Cached fetchers in `clickup/cached.ts` (all slim shapes): `getTask(taskId)` (tag `task:{id}`, life `hours`, `include_markdown_description`), `getTaskComments(taskId)` (tags `task:{id}:comments` + `task:{id}`, oldest first), `getTaskIndex()` (open tasks, tag `team:task-index`), `getArchiveTaskIndex()` (open + closed updated in last 90 days, same tag). Webhook now also revalidates `team:task-index` on every task event.
+- **ClickUp v2 has no free-text search endpoint** — `/api/search?q=` filters the single cached `getArchiveTaskIndex()` entry in memory (per-query cache entries would have ~zero hit rate). Both `/api/*` search routes gate on the better-auth session themselves (proxy matcher excludes `/api/*` by design).
+- Server Actions (`src/lib/actions/`): `postComment(taskId, text)` — decrypts the acting user's token, `POST /task/{id}/comment`, then `updateTag(task:{id}:comments)` for read-your-own-writes; `togglePin` (pinned_tasks, delete-then-insert with conflict-ignore).
+- Optimistic UI via zustand (`src/stores/comments.ts`, `src/stores/pins.ts`): comments show instantly as "sending…" and reconcile when the action's refreshed thread arrives (failures stay visible); pins flip instantly with rollback on server error.
+- **PinnedBar** in `(app)/layout.tsx` (own Suspense boundary) renders from the pins store, seeded once from Postgres on first client render (hydrate-once so optimistic toggles never get clobbered). Homepage widgets, inbox, and push notification URLs now deep-link to `/task/{id}` in-app instead of clickup.com.
+- **cmd+k palette** (`src/components/cmdk/command-palette.tsx`, Base UI Dialog, mounted in the app layout): Tier 1 = 0ms client fuzzy filter (`src/lib/search.ts`, dependency-free scorer) over pins + localStorage recents + the open-task index fetched once per browser session from `/api/search-index`; Tier 2 = 250ms-debounced `/api/search?q=` results appended under "More", deduped, stale responses discarded by query-matching.
 
 ## Phase 5 — Mappings + deploy webhooks + commits
 
