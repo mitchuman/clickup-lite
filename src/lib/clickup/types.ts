@@ -26,6 +26,18 @@ export interface ClickUpTask {
 	assignees: ClickUpUserRef[]
 	priority: { id: string; priority: string; color: string } | null
 	time_estimate: number | null
+	// Only present on GET /task/{id}; markdown_description requires
+	// ?include_markdown_description=true on the request.
+	description?: string | null
+	markdown_description?: string | null
+}
+
+export interface ClickUpComment {
+	id: string
+	comment_text: string
+	date: string
+	user: ClickUpUserRef
+	reply_count?: number | string
 }
 
 export interface ClickUpTimeEntry {
@@ -53,4 +65,39 @@ export interface TimeEntrySummary {
 	id: string
 	taskName: string | null
 	durationMs: number
+}
+
+/** Slim shape cached by getTask — everything the task view renders. */
+export interface TaskDetail {
+	id: string
+	name: string
+	status: { status: string; color: string; type: string }
+	dueDate: number | null
+	url: string
+	listId: string
+	listName: string
+	folderName: string | null
+	assignees: { id: number; username: string; profilePicture: string | null }[]
+	priority: { priority: string; color: string } | null
+	timeEstimateMs: number | null
+	/** Markdown when ClickUp provides it, else the plain description. */
+	description: string | null
+}
+
+/** Slim shape cached by getTaskComments (oldest first). */
+export interface CommentSummary {
+	id: string
+	text: string
+	dateMs: number
+	user: { id: number; username: string; profilePicture: string | null }
+	replyCount: number
+}
+
+/** Slim shape cached by getTaskIndex/getArchiveTaskIndex — powers cmd+k. */
+export interface TaskIndexEntry {
+	id: string
+	name: string
+	listName: string
+	status: string
+	closed: boolean
 }

@@ -57,6 +57,8 @@ export async function POST(request: Request) {
 
 	if (taskId && TASK_EVENTS.has(event)) {
 		revalidateTag(tags.task(taskId), 'max')
+		// Any task event can change the cmd+k index (name, status, list, existence).
+		revalidateTag(tags.teamTaskIndex(), 'max')
 		if (COMMENT_EVENTS.has(event)) {
 			revalidateTag(tags.taskComments(taskId), 'max')
 		}
