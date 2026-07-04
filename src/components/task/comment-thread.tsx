@@ -1,4 +1,7 @@
 import { getTaskComments } from '@/lib/clickup/cached'
+import { requireUser } from '@/lib/session'
+import { CommentComposer } from './comment-composer'
+import { PendingComments } from './pending-comments'
 
 function formatCommentDate(ms: number): string {
 	return new Date(ms).toLocaleString('en-US', {
@@ -11,7 +14,9 @@ function formatCommentDate(ms: number): string {
 }
 
 export async function CommentThread({ taskId }: { taskId: string }) {
-	const comments = await getTaskComments(taskId)
+	// Parallel: cached ClickUp fetch + session lookup (needed for the optimistic
+	// composer's attribution) — never sequential.
+	const [comments, user] = await Promise.all([getTaskComments(taskId), requireUser()])
 
 	return (
 		<section>
@@ -31,6 +36,8 @@ export async function CommentThread({ taskId }: { taskId: string }) {
 					))}
 				</ul>
 			)}
+			<PendingComments taskId={taskId} />
+			<CommentComposer taskId={taskId} username={user.clickupUsername} />
 		</section>
 	)
 }
