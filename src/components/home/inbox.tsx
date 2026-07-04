@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { db } from '@/lib/db'
 
 // Reads directly from Postgres (no 'use cache') — it's a cheap indexed query
@@ -22,7 +23,13 @@ export async function Inbox({ clickupUserId }: { clickupUserId: string }) {
 					{notifications.map((notification) => (
 						<li key={notification.id}>
 							{notification.actor ?? 'Someone'} — {notification.type} —{' '}
-							{notification.task_name ?? notification.clickup_task_id}
+							{notification.clickup_task_id ? (
+								<Link href={`/task/${notification.clickup_task_id}`}>
+									{notification.task_name ?? notification.clickup_task_id}
+								</Link>
+							) : (
+								(notification.task_name ?? 'a task')
+							)}
 						</li>
 					))}
 				</ul>

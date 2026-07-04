@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { TaskSummary } from '@/lib/clickup/types'
 import { getUserTasks } from '@/lib/clickup/cached'
 import { startOfTodayMs } from '@/lib/date'
@@ -34,7 +35,7 @@ export async function WeekLoad({ clickupUserId }: { clickupUserId: string }) {
 						<ul>
 							{dayTasks.map((task) => (
 								<li key={task.id}>
-									<a href={task.url}>{task.name}</a> — {task.listName}
+									<Link href={`/task/${task.id}`}>{task.name}</Link> — {task.listName}
 								</li>
 							))}
 						</ul>

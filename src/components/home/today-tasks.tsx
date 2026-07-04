@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getUserTasks } from '@/lib/clickup/cached'
 import { isSameUtcDay } from '@/lib/date'
 
@@ -17,7 +18,7 @@ export async function TodayTasks({ clickupUserId }: { clickupUserId: string }) {
 				<ul>
 					{today.map((task) => (
 						<li key={task.id}>
-							<a href={task.url}>{task.name}</a> — {task.listName}
+							<Link href={`/task/${task.id}`}>{task.name}</Link> — {task.listName}
 						</li>
 					))}
 				</ul>

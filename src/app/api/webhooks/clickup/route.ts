@@ -108,9 +108,7 @@ export async function POST(request: Request) {
 									? `${actor?.username ?? 'Someone'} commented`
 									: `${actor?.username ?? 'Someone'} updated a task`,
 								body: task.name,
-								// Task detail view doesn't exist yet (Phase 4) — link to the real
-								// ClickUp task in the meantime.
-								url: task.url,
+								url: `${env.betterAuthUrl}/task/${taskId}`,
 							})
 						}),
 					)
