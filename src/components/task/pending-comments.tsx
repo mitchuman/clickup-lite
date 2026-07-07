@@ -17,21 +17,27 @@ export function PendingComments({ taskId }: { taskId: string }) {
 	if (pending.length === 0) return null
 
 	return (
-		<ul>
+		<ul className="mt-4 space-y-4">
 			{pending.map((comment) => (
-				<li key={comment.localId} className={comment.failed ? 'text-red-600' : 'opacity-60'}>
-					<p>
-						<strong>{comment.username}</strong> · {comment.failed ? 'failed to send' : 'sending…'}
-						{comment.failed && (
-							<>
-								{' '}
-								<button type="button" onClick={() => retry(comment)}>
-									dismiss
-								</button>
-							</>
-						)}
-					</p>
-					<p className="whitespace-pre-wrap">{comment.text}</p>
+				<li key={comment.localId} className={`flex gap-3 ${comment.failed ? '' : 'opacity-60'}`}>
+					<span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-[10px] font-semibold text-accent-strong uppercase">
+						{comment.username.slice(0, 2)}
+					</span>
+					<div className="min-w-0">
+						<p className={`text-xs ${comment.failed ? 'text-red-600' : 'text-zinc-400'}`}>
+							<span className="font-semibold text-zinc-700">{comment.username}</span> ·{' '}
+							{comment.failed ? 'failed to send' : 'sending…'}
+							{comment.failed && (
+								<>
+									{' '}
+									<button type="button" onClick={() => retry(comment)} className="underline">
+										dismiss
+									</button>
+								</>
+							)}
+						</p>
+						<p className="mt-0.5 text-sm leading-relaxed whitespace-pre-wrap text-zinc-700">{comment.text}</p>
+					</div>
 				</li>
 			))}
 		</ul>

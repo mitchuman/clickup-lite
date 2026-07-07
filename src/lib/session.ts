@@ -8,8 +8,10 @@ export const getSession = cache(async () => {
 	return auth.api.getSession({ headers: await headers() })
 })
 
-/** Full server-side auth gate: redirects to sign-in or ClickUp-connect as needed. */
-export async function requireUser() {
+/** Full server-side auth gate: redirects to sign-in or ClickUp-connect as
+ * needed. React-cached so several Suspense boundaries in one request (header,
+ * widgets, comment thread) share a single session + credentials lookup. */
+export const requireUser = cache(async () => {
 	const session = await getSession()
 	if (!session) redirect('/sign-in')
 
@@ -28,7 +30,7 @@ export async function requireUser() {
 		clickupUserId: credentials.clickup_user_id,
 		clickupUsername: credentials.clickup_username,
 	}
-}
+})
 
 /** For Server Actions that need the acting user's personal ClickUp token. */
 export async function getClickUpCredentials(userId: string) {

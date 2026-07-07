@@ -1,7 +1,23 @@
 @import "tailwindcss";
 
-@theme {}
+@theme {
+	--font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+	--font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+	/* Single accent used for links, focus rings, and primary buttons. */
+	--color-accent: oklch(0.54 0.19 277);
+	--color-accent-strong: oklch(0.46 0.21 277);
+	--color-accent-soft: oklch(0.95 0.03 277);
+}
 
 @custom-variant hover (&:hover);
 
-@layer base {}
+@layer base {
+	body {
+		@apply bg-zinc-50 font-sans text-zinc-900;
+	}
+
+	::selection {
+		@apply bg-accent-soft;
+	}
+}

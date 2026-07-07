@@ -1,4 +1,5 @@
-import Link from 'next/link'
+import { Card, CardTitle, EmptyState } from '@/components/ui/card'
+import { TaskRow } from '@/components/ui/task-row'
 import { getUserTasks } from '@/lib/clickup/cached'
 import { startOfTodayMs } from '@/lib/date'
 
@@ -10,19 +11,23 @@ export async function OverdueTasks({ clickupUserId }: { clickupUserId: string })
 	)
 
 	return (
-		<section>
-			<h2>Overdue ({overdue.length})</h2>
+		<Card className="border-l-4 border-l-red-400">
+			<CardTitle className="text-red-500">Overdue · {overdue.length}</CardTitle>
 			{overdue.length === 0 ? (
-				<p>Nothing overdue.</p>
+				<EmptyState>Nothing overdue.</EmptyState>
 			) : (
 				<ul>
 					{overdue.map((task) => (
-						<li key={task.id}>
-							<Link href={`/task/${task.id}`}>{task.name}</Link> — {task.listName}
-						</li>
+						<TaskRow
+							key={task.id}
+							taskId={task.id}
+							name={task.name}
+							meta={task.listName}
+							statusType={task.status.type}
+						/>
 					))}
 				</ul>
 			)}
-		</section>
+		</Card>
 	)
 }

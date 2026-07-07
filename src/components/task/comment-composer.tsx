@@ -40,16 +40,23 @@ export function CommentComposer({ taskId, username }: { taskId: string; username
 				onChange={(event) => setText(event.target.value)}
 				placeholder="Write a comment…"
 				rows={3}
-				className="block w-full border"
+				className="block w-full resize-y rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none placeholder:text-zinc-400 focus:border-accent focus:ring-2 focus:ring-accent-soft"
 				onKeyDown={(event) => {
 					if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
 						event.currentTarget.form?.requestSubmit()
 					}
 				}}
 			/>
-			<button type="submit" disabled={!text.trim()}>
-				Comment
-			</button>
+			<div className="mt-2 flex items-center justify-end gap-3">
+				<span className="text-xs text-zinc-400">⌘↵ to send</span>
+				<button
+					type="submit"
+					disabled={!text.trim()}
+					className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
+				>
+					Comment
+				</button>
+			</div>
 		</form>
 	)
 }

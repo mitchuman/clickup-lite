@@ -51,9 +51,12 @@ export async function DocPills({ taskId }: { taskId: string }) {
 					href={link.url}
 					target="_blank"
 					rel="noreferrer"
-					className="rounded-full border px-3 py-1 text-sm"
+					className="flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-600 shadow-sm transition-colors hover:border-accent hover:text-accent-strong"
 				>
-					{link.label}
+					<svg className="size-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.25" aria-hidden>
+						<path d="M5 7 7 5m-3.5.5-1 1a1.77 1.77 0 0 0 2.5 2.5l1-1m1.5-1.5 1-1A1.77 1.77 0 0 0 6 3l-1 1" strokeLinecap="round" />
+					</svg>
+					{link.label} ↗
 				</a>
 			))}
 		</nav>

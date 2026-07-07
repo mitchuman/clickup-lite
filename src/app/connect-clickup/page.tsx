@@ -18,13 +18,23 @@ export default async function ConnectClickUpPage() {
 	if (existing) redirect('/')
 
 	return (
-		<main>
-			<h1>Connect your ClickUp account</h1>
-			<p>
-				Paste your ClickUp personal API token (ClickUp → Settings → Apps) to finish setting up your account.
-				We verify it belongs to the agency workspace before saving it.
-			</p>
-			<ConnectClickUpForm />
+		<main className="flex min-h-dvh items-center justify-center px-4">
+			<div className="w-full max-w-sm">
+				<div className="mb-6 flex items-center gap-2">
+					<span className="flex size-9 items-center justify-center rounded-xl bg-accent text-lg font-bold text-white">
+						⚡
+					</span>
+					<div>
+						<h1 className="font-semibold text-zinc-900">Connect ClickUp</h1>
+						<p className="text-xs text-zinc-500">One more step to finish setup</p>
+					</div>
+				</div>
+				<p className="mb-4 text-sm text-zinc-500">
+					Paste your personal API token from ClickUp → Settings → Apps. We verify it belongs to the agency
+					workspace before saving it encrypted.
+				</p>
+				<ConnectClickUpForm />
+			</div>
 		</main>
 	)
 }

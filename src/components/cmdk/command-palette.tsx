@@ -142,40 +142,60 @@ export function CommandPalette() {
 	return (
 		<Dialog.Root open={open} onOpenChange={setOpen}>
 			<Dialog.Portal>
-				<Dialog.Backdrop className="fixed inset-0 bg-black/40" />
-				<Dialog.Viewport className="fixed inset-0 flex items-start justify-center pt-24">
-					<Dialog.Popup className="w-full max-w-lg rounded-lg border bg-white p-2 shadow-xl">
+				<Dialog.Backdrop className="fixed inset-0 z-50 bg-zinc-900/30 backdrop-blur-[2px] transition-opacity duration-100 data-starting-style:opacity-0 data-ending-style:opacity-0" />
+				<Dialog.Viewport className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[15vh]">
+					<Dialog.Popup className="w-full max-w-lg origin-top overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-2xl transition-[scale,opacity] duration-100 data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0">
 						<Dialog.Title className="sr-only">Search tasks</Dialog.Title>
-						<input
-							autoFocus
-							value={query}
-							onChange={(event) => {
-								setQuery(event.target.value)
-								setHighlight(0)
-							}}
-							onKeyDown={onInputKeyDown}
-							placeholder="Search tasks…"
-							className="block w-full border-b p-2 outline-none"
-						/>
-						<ul className="max-h-80 overflow-y-auto">
+						<div className="flex items-center gap-2 border-b border-zinc-100 px-4">
+							<svg
+								className="size-4 shrink-0 text-zinc-400"
+								viewBox="0 0 16 16"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="1.5"
+								aria-hidden
+							>
+								<circle cx="7" cy="7" r="4.5" />
+								<path d="m10.5 10.5 3 3" strokeLinecap="round" />
+							</svg>
+							<input
+								autoFocus
+								value={query}
+								onChange={(event) => {
+									setQuery(event.target.value)
+									setHighlight(0)
+								}}
+								onKeyDown={onInputKeyDown}
+								placeholder="Search tasks…"
+								className="w-full bg-transparent py-3.5 text-sm outline-none placeholder:text-zinc-400"
+							/>
+							<kbd className="shrink-0 rounded border border-zinc-200 px-1.5 py-0.5 text-[10px] text-zinc-400">esc</kbd>
+						</div>
+						<ul className="max-h-80 overflow-y-auto p-1.5">
 							{items.length === 0 && (
-								<li className="p-2 text-sm opacity-60">
+								<li className="px-2.5 py-6 text-center text-sm text-zinc-400">
 									{trimmedQuery === '' ? 'No pins or recent tasks yet.' : index ? 'No matches.' : 'Loading index…'}
 								</li>
 							)}
 							{items.map((item, i) => (
 								<li key={`${item.section}-${item.id}`}>
 									{(i === 0 || items[i - 1].section !== item.section) && (
-										<p className="px-2 pt-2 text-xs uppercase opacity-50">{item.section}</p>
+										<p className="px-2.5 pt-2 pb-1 text-[10px] font-semibold tracking-wide text-zinc-400 uppercase">
+											{item.section}
+										</p>
 									)}
 									<button
 										type="button"
 										onClick={() => select(item)}
 										onMouseMove={() => setHighlight(i)}
-										className={`block w-full cursor-pointer p-2 text-left ${i === highlighted ? 'bg-black/10' : ''}`}
+										className={`flex w-full cursor-pointer items-baseline gap-2 rounded-lg px-2.5 py-2 text-left text-sm ${
+											i === highlighted ? 'bg-accent-soft text-accent-strong' : 'text-zinc-700'
+										}`}
 									>
-										{item.name}
-										{item.detail && <span className="ml-2 text-sm opacity-60">{item.detail}</span>}
+										<span className="min-w-0 flex-1 truncate font-medium">{item.name}</span>
+										{item.detail && (
+											<span className="max-w-[40%] shrink-0 truncate text-xs text-zinc-400">{item.detail}</span>
+										)}
 									</button>
 								</li>
 							))}
